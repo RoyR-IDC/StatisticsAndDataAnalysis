@@ -184,8 +184,20 @@ plt.grid()
 #6. Identify and report 2 “interesting” trends in the data. 
 #   No need to provide statistical confidence at this point. 
 
-sns.scatter(x='index', y= 'RM', hue ='PRICE', data= boston_df.reset_index(0))
 boston_df.plot.scatter(x='RM', y='PRICE')
+plt.title('Scatter plot\nThe most positive corrolettion the price')
+plt.grid()
+
+
+boston_df.plot.scatter(x='LSTAT', y='PRICE')
+plt.title('Scatter plot\nThe most negative corrolettion the price')
+plt.grid()
+
+
+boston_df.plot.scatter(x='AGE', y='PRICE')
+plt.title('Scatter plot\nThe most negative corrolettion the price')
+plt.grid()
+
 """
 
 
@@ -212,7 +224,17 @@ and $k=2$ possible outcomes respectivley.
 How many parameters define the joint distribution of $\ X, Y \ $ and $Z$?
 """
 
+"""
+in order to define joint distribution needed n*m*2-1 parameters
 
+Explanaation for roy:
+    in order to make a joint distribution, we need to fill the table with probabilities for eacvh combnation of values !
+    for example, if we have 2 random variables with 2 options for each RV, 
+    we will need to fill a 2x2 matrix with probabilities.
+    we have a joint distribution probabiltity only if the entire table is full.
+    since each table entry is a probability of a single occurunce, and all table entries need to sum up to 1,
+    we only need to fill in 3 tables entries, and the last one will be 1 - sum of all others.
+"""
 
 #ddd
 
@@ -263,9 +285,34 @@ with $k=3$. Furthermore, assume that
 Read the data and answer the following questions.
 
 """
+from sklearn import mixture
 
+GMD_csv_df = pd.read_csv(r"C:\Msc\Git\StatisticsAndDataAnalysis\HW2\GMD_2021.csv", header=None, index_col=0)
+samples = GMD_csv_df[1].to_list()
+
+#print(df_gmd.head())
+mue_1 = 4
+mue_2 = 9
+sigma_1 = 0.5
+sigma_2 = 0.5
+sigma_3 = 1.5
+
+######## way 1 #####
+mean_init_array = np.array([[mue_1],[mue_2],[np.mean(samples)]])
+weight_2 = 0.25
+weight_init = (0.25,weight_2,0.5)
+### WAY no' 1 - Using Gaussian mixture with EM ###
+print("="*20,"WAY no' 1 using Gaussian mixture with EM","="*20)
+# Fit a Gaussian mixture with EM using 2 components
+gmm = mixture.GaussianMixture(n_components=3,means_init =mean_init_array ,weights_init=weight_init,  covariance_type='full').fit(GMD_csv_df)
+
+GM_result_df = pd.DataFrame()
+GM_result_df['Means'] = gmm.means_.reshape(3,).tolist()
+GM_result_df['Weights'] =np.round( gmm.weights_.tolist(),3)
+print(GM_result_df)
 
 #ggd
+######## way 1 #####
 
 
 """
@@ -283,6 +330,16 @@ Plot a graph of the pdf of the distribution you inferred.
 """
 #fff
 
+sns.distplot(samples,bins=50)
+std = np.std(samples)
+mean = np.mean(samples)
+plt.xlim(xmin= mean-3*std , xmax= mean+3*std)
+# The limits are where the cdf is 0.997 by the formula : P(μ-3s ≤ Y ≤ μ+3s) 
+plt.grid()
+plt.xlabel(f'Sample Values')
+plt.title(f'PDF GMD_2021 Data')
+plt.show()
+
 
 """
 #### 3.C
@@ -296,7 +353,18 @@ described in section A? Explain.
 """
 # 55
 
+mean_init_array = np.array([[mue_1],[mue_2],[np.mean(samples)],[np.mean(samples)]])
+weight_2 = 0.25
+weight_init = (0.25,weight_2,0.25,0.25)
+### WAY no' 1 - Using Gaussian mixture with EM ###
+print("="*20,"WAY no' 1 using Gaussian mixture with EM","="*20)
+# Fit a Gaussian mixture with EM using 2 components
+gmm = mixture.GaussianMixture(n_components=4,means_init =mean_init_array ,weights_init=weight_init,  covariance_type='full').fit(GMD_csv_df)
 
+GM_result_df = pd.DataFrame()
+GM_result_df['Means'] = gmm.means_.reshape(4,).tolist()
+GM_result_df['Weights'] =np.round( gmm.weights_.tolist(),3)
+print(GM_result_df)
 """
 #### 3.D
 Describe two ways for generating data for a GMM random variable with:
@@ -304,7 +372,79 @@ Describe two ways for generating data for a GMM random variable with:
 * $\sigma_1=\sigma_2=\sigma_3=1$
 * $w_1=w_2=w_3=0.33$
 """
+#### way 1
 
+"""
+Like we did in the first question-
+1. create a normal distrubution to each geonosian with size of N
+2. create an empty GMD array
+3. do N times:
+    - randomize a P(probability) that considerate the weight of each distrubution
+    - add to the GMD array a value from one of the normal distrubution
+    
+#### way 2
+1. Genarate 2 normal distrubution with size of 500
+2. join  the 2 vectors into one which represent the GMD
+"""
+import scipy.stats
+import numpy as np
+import numpy.random
+import scipy.stats as ss
+import matplotlib.pyplot as plt
+
+mue1 = 3
+mue2 = 7
+mue3 = 10
+
+sigma1 = sigma2 = sigma3 = 1
+
+w1 = w2 = w3 = 0.33
+
+
+n = 10000
+numpy.random.seed(0x5eed)
+# Parameters of the mixture components
+norm_params = np.array([[mue1, sigma1],
+                        [mue2, sigma2],
+                        [mue3, sigma3]])
+n_components = norm_params.shape[0]
+# Weight of each component, in this case all of them are 1/3
+weights = np.ones(n_components, dtype=np.float64) / 3.0
+# A stream of indices from which to choose the component
+mixture_idx = numpy.random.choice(len(weights), size=n, replace=True, p=weights)
+# y is the mixture sample
+y = numpy.fromiter((ss.norm.rvs(*(norm_params[i])) for i in mixture_idx),
+                   dtype=np.float64)
+
+# Theoretical PDF plotting -- generate the x and y plotting positions
+xs = np.linspace(y.min(), y.max(), 200)
+ys = np.zeros_like(xs)
+
+for (l, s), w in zip(norm_params, weights):
+    ys += ss.norm.pdf(xs, loc=l, scale=s) * w
+
+sns.distplot(y,bins=100)
+plt.title('way A  - to create GMD')
+"""
+plt.plot(xs, ys)
+plt.hist(y, bins=100)
+plt.xlabel("x")
+plt.ylabel("f(x)")
+plt.show()
+"""
+
+
+plt.figure()
+norm1 = np.random.normal(mue1, sigma1,1000)
+norm2 = np.random.normal(mue2, sigma2,1000)
+norm3 = np.random.normal(mue3, sigma3,1000)
+
+new_norm2 = []
+new_norm2.extend(norm1)
+new_norm2.extend(norm2)
+new_norm2.extend(norm3)
+sns.distplot(new_norm2, bins=100)
+plt.title('way B  - to create GMD')
 
 # gggg
 """
@@ -334,6 +474,12 @@ The annual salaries of employees in a large Randomistan company
 What percent of people earn less than 50,000 RCU?
 """
 
+mean = 70000
+std = 30000
+desire_sallary = 50000
+less_than_50k = scipy.stats.norm(mean,std).cdf(desire_sallary)
+
+
 
 
 # ffd
@@ -344,6 +490,13 @@ What percent of people earn less than 50,000 RCU?
 What percent of people earn between 45,000 RCU and 65,000 RCU?
 
 """
+up_desire_sallary = 65000
+down_desire_sallary = 45000
+
+up_cdf_result = scipy.stats.norm(mean,std).cdf(up_desire_sallary)
+down_cdf_result = scipy.stats.norm(mean,std).cdf(down_desire_sallary)
+
+percent_to_sallary_between_2_values = up_cdf_result - down_cdf_result
 
 
 
@@ -353,6 +506,10 @@ What percent of people earn between 45,000 RCU and 65,000 RCU?
 #### 4.C
 What percent of people earn more than 70,000 RCU?
 """
+more_than_desire_sallary = 70000
+
+percent_more_than_desire_sallary = 1-scipy.stats.norm(mean,std).cdf(more_than_desire_sallary)
+
 
 
 
@@ -363,6 +520,10 @@ What percent of people earn more than 70,000 RCU?
 The company has 1000 employees. How many employees in the 
 company do you expect to earn more than 140,000 RCU?
 """
+more_than_desire_sallary = 140000
+amount_of_employees = 1000
+percent_more_than_desire_sallary = 1-scipy.stats.norm(mean,std).cdf(more_than_desire_sallary)
+desire_amount_of_employees = np.ceil(amount_of_employees*percent_more_than_desire_sallary)
 
 # ------------------------------------------------------------------------------------------------------------
 
