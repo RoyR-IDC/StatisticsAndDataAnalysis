@@ -327,19 +327,21 @@ def estimate_mue(weight_array, weight_index, sample):
     return  weight_array
 weight_array = [0.25,weight_2,0.5]
 weight_array = estimate_w(weight_array, 2)
-
+import scipy
 
 new_max= 0
 new_parameters = [0,0,0]
-for w1 in range(0,0.75):
+
+for w1 in np.arange(0.05,0.2,0.05):
     w3 = 1-w1-weight_2
-    for mue_3 in range (1,50):
+    for mue_3 in range (10,20):
         curr_list = [w1,w3,mue_3]
         curr_sum = 0
         for i_sample in samples:
-            curr_sum += w1*scipy.stat.norm(mue_1,sigma_1 ).pdf(i_sample)
+            curr_sum += (w1*scipy.stats.norm(mue_1,sigma_1 ).pdf(i_sample)+weight_2*scipy.stats.norm(mue_2,sigma_2 ).pdf(i_sample)+w3*scipy.stats.norm(mue_3,sigma_3 ).pdf(i_sample))
         if new_max<curr_sum:
             new_parameters = curr_list
+            new_max  = curr_sum
         
 ######## way 2 #####
 
