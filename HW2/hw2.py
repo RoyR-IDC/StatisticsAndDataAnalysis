@@ -313,6 +313,35 @@ print(GM_result_df)
 
 #ggd
 ######## way 1 #####
+######## way 2 #####
+
+def estimate_w(weight_array, weight_index, sample):
+    Sum = 0
+    weight_array[weight_index] =   weight_array[weight_index]/(np.sum(weight_array)*len(sample))
+    return  weight_array
+
+def estimate_mue(weight_array, weight_index, sample):
+    Sum = 0
+    
+    weight_array[weight_index] =   weight_array[weight_index]/(np.sum(weight_array))
+    return  weight_array
+weight_array = [0.25,weight_2,0.5]
+weight_array = estimate_w(weight_array, 2)
+
+
+new_max= 0
+new_parameters = [0,0,0]
+for w1 in range(0,0.75):
+    w3 = 1-w1-weight_2
+    for mue_3 in range (1,50):
+        curr_list = [w1,w3,mue_3]
+        curr_sum = 0
+        for i_sample in samples:
+            curr_sum += w1*scipy.stat.norm(mue_1,sigma_1 ).pdf(i_sample)
+        if new_max<curr_sum:
+            new_parameters = curr_list
+        
+######## way 2 #####
 
 
 """
