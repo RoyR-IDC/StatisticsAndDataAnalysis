@@ -7,13 +7,54 @@ Pearson(x,y) = Pearson correlation<br>
 <img src="jointplot.png">
 """
 
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import seaborn as sns
+import random
+import time
+from scipy import stats as st # for pearsonr, kendalltau, spearmanr etc.
+from scipy.stats import multivariate_normal as mn
+from numpy.linalg import matrix_power
+from scipy.stats import rv_discrete
+import warnings
 
-"""
-#### 1.A
-Data in which  $Pearson(x,y) < -0.9$ but where $n-1$ points can be selected so that for the vectors restricted to those we have $Pearson(x_{n-1},y_{n-1}) > -0.2$
-"""
 
 
+def print_table_and_jointplot(x, y, d = True):
+    # table description of the example data
+    table = pd.DataFrame(np.vstack((x,y)).T, columns = ['x', 'y'])
+    
+    if d != False:
+        table['d_i'] = table['x'] - table['y']
+    
+    print(table)
+
+    p = sns.jointplot(data=table, x=x, y=y, marker='+')
+    p.fig.suptitle('x & y values JointPlot', fontsize=25)
+    p.fig.subplots_adjust(top=0.9) # Reduce plot to make room for title
+n = 6 # 50 datapoints
+
+x = np.zeros(n)
+y = np.zeros(n)
+
+# 
+x[n-2] = 1e-5
+y[n-2] = 1e-5
+
+# these are the last values we will exclude
+x[n-1] = -100
+y[n-1] = 100
+
+overall_correlation = st.pearsonr(x, y)[0]
+partial_correlation = st.pearsonr(x[:n-1], y[:n-1])[0]
+S = 'Pearson correlation between x & y  '
+
+print(f'\
+Overall Pearson correlation between x & y is {overall_correlation}\n\
+Excluding the last value of each, we get {partial_correlation}\n')
+
+print_table_and_jointplot(x, y, d=False)
 """
 Data with τ(x,y) > ρ(x,y) + 0.45
 """
