@@ -237,8 +237,6 @@ alpha = 0.07 # certainty of 93%
 
 
 
-
-
 # starting from index 2 which is the first gene (0 is "Class" and 1 is "ID")
 TTEST_df = df.iloc[:,2:].apply(calculate_t_test, axis=0, result_type='expand')
 TTEST_df.index=['statistic', 'p-value']
@@ -274,15 +272,23 @@ print(f'WRS overexpressed genes in M vs H is {WRS_overexpressed_genes_df.shape[0
 print(f'WRS underexpressed genes in M vs H is {WRS_underexpressed_genes_df.shape[0]}')
 
 
-# Select the 80 most significant genes from each one of the one-sided WRS DE lists you computed in section c
+"""
+Compute Kendall tho correlations in all pairs within D (160
+choose 2 numbers). Represent the correlation matrix as a 160x160
+heatmap.
+"""
+
+"""
+NOTE that the genes with smaller p values are more significant
+we will choose the 80 most significant (smallest) genes from each one of the one-sided WRS DE 
+"""
 n = 80
 over_significant_df = WRS_overexpressed_genes_df.sort_values(by='p-value').head(n) # sorting by the p-values
 under_significant_df = WRS_underexpressed_genes_df.sort_values(by='p-value').head(n)
 
 # Generate a set of 160 genes, D, which is the union of the above two sets
-D = over_significant_df.append(under_significant_df)
-D_df = df[D.index]
-
+most_significant_df  = pd.concat([over_significant_df, under_significant_df])
+most_significant_df = df[most_significant_df.index]
 
 def gen_kendall_pairs(df):
 
@@ -291,40 +297,68 @@ def gen_kendall_pairs(df):
 
     for gene1 in df.columns:
         for gene2 in df.columns:
-
+            # avoiding correlations of a gene with itself
             if gene1 == gene2:
-                # avoiding correlations of a gene with itself
                 continue
 
             key = (gene1, gene2)
             key_opposite = (gene2, gene1)
-
-            if key not in corrs and key_opposite not in corrs: # avoiding duplicates since tau(g1, g2) == tau(g2, g1)
+            # avoiding duplicates since tau(g1, g2) == tau(g2, g1)
+            if key not in corrs and key_opposite not in corrs: 
+                # return stats.kendalltau  --> tau, p-value
                 kndl = stats.kendalltau(df[gene1], df[gene2])
-                corrs[key] = (kndl[0], kndl[1]) # tau, p-value
+                # update
+                corrs[key] = (kndl[0], kndl[1]) 
     
     return corrs
 
-corrs = gen_kendall_pairs(D_df)
+corrs = gen_kendall_pairs(most_significant_df)
 
-
-D_kendall_correlations_df = D_df.corr(method='kendall') # https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.corr.html
-
-
+D_kendall_correlations_df = most_significant_df.corr(method='kendall') 
 plt.figure(figsize = (25,15))
-sns.heatmap(D_kendall_correlations_df, cmap= 'magma', vmin=-1, vmax=1)
+sns.heatmap(D_kendall_correlations_df, annot=True,cmap="YlGnBu", vmin=-1, vmax=1)
 
-plt.title(f'{n*2} Most Significant Genes - Correlation', fontsize=20)
+plt.title('160 Most Significant Genes - Correlation', fontsize=20)
 plt.xlabel('gene name', fontsize=15)
 plt.ylabel('gene name', fontsize=15)
 plt.show()
 
 
 """
-Compute Kendall tho correlations in all pairs within D (160
-choose 2 numbers). Represent the correlation matrix as a 160x160
-heatmap.
+Under a NULL model that assumes that genes are pairwise
+independent, what is the expected value for tho ?
 """
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
