@@ -328,7 +328,7 @@ plt.show()
 Under a NULL model that assumes that genes are pairwise
 independent, what is the expected value for tho ?
 """
- 
+
 
 
 
