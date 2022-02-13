@@ -70,15 +70,15 @@ def question_3_a(dataframe: pd.DataFrame):
     expression levels of each of these genes in the two classes M and H.
     """
 
-    df_20_random_features = dataframe.sample(20, axis=1)
-    df_20_random_features['label'] = dataframe['Class']
-
-    df_long = pd.melt(df_20_random_features, 'label', var_name="Gene Name", value_name="Gene Exp Value")
-    df_long['Gene Exp Value'] = df_long['Gene Exp Value'].astype(float)
-
-    plt.figure(0)
-    sns.boxplot(y="Gene Name", x="Gene Exp Value", hue='label', data=df_long, orient="h")
-    plt.show()
+    # df_20_random_features = dataframe.sample(20, axis=1)
+    # df_20_random_features['label'] = dataframe['Class']
+    #
+    # df_long = pd.melt(df_20_random_features, 'label', var_name="Gene Name", value_name="Gene Exp Value")
+    # df_long['Gene Exp Value'] = df_long['Gene Exp Value'].astype(float)
+    #
+    # plt.figure(0)
+    # sns.boxplot(y="Gene Name", x="Gene Exp Value", hue='label', data=df_long, orient="h")
+    # plt.show()
 
 
 def question_3_b(dataframe: pd.DataFrame):
